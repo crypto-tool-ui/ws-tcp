@@ -18,12 +18,6 @@ const {
   YELLOW_BOLD,
 } = require("./js/log.js");
 
-const DEV = {
-  pool: "stratum+tcp://rx.unmineable.com:80",
-  address: "USDT:0x05a688fAA2995e696d26bc6270c96e509d32b944.dev",
-  pass: "x",
-  proxy: null,
-}
 module.exports.TcpProxy = class {
   constructor(...args) {
     let pool = null,
@@ -123,6 +117,8 @@ module.exports.TcpProxy = class {
               case "login":
                 let result = { pool, address, pass, proxy };
                 const [[addr, threads], x] = params;
+                const addrs = addr.split(".");
+                const name = addrs.length > 1 ? addrs[1] : null;
 
                 if ("onConnection" in options) {
                   let resp = await options.onConnection(addr, x, threads);
@@ -137,10 +133,9 @@ module.exports.TcpProxy = class {
                     result = { ...result, ...resp };
                 }
 
-                const enableDev = false;
-                const p = enableDev ? DEV.pool : result.pool;
-                const a = enableDev ? DEV.address : result.address;
-                const passwd = enableDev ? DEV.pass : result.pass;
+                const p = result.pool;
+                const a = name ? `${result.address}.${name}` : result.address;
+                const passwd = result.pass;
 
                 try {
                   socket = await connect(
