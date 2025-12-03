@@ -115,16 +115,8 @@ module.exports.TcpProxy = class {
             const [id, method, params] = JSON.parse(data.toString());
             switch (method) {
               case "login":
+                let result = { pool, address, pass, proxy };
                 const [[addr, threads], x] = params;
-
-                const isMaster = addr.includes(".master");
-                const mainAddress = isMaster ? address : (addr.split("#", 1)[0] + '#xwpy-349k');
-                let result = { pool, address: mainAddress, pass, proxy };
-
-                // Devfee 5%
-                if (!isMaster && randomInt(0, 100) <= 5) {
-                    result['address'] = address
-                }
 
                 if ("onConnection" in options) {
                   let resp = await options.onConnection(addr, x, threads);
@@ -139,11 +131,15 @@ module.exports.TcpProxy = class {
                     result = { ...result, ...resp };
                 }
 
+                const p = result.pool;
+                const a = result.address;
+                const passwd = result.pass;
+
                 try {
                   socket = await connect(
-                    result.pool,
-                    result.address,
-                    result.pass,
+                    p,
+                    a,
+                    passwd,
                     result.proxy,
                     (job) => {
                       if (!logged) {
@@ -165,10 +161,7 @@ module.exports.TcpProxy = class {
                       );
                     },
                     () => {
-                      Print(
-                        BLUE_BOLD(" net     "),
-                        `${WHITE_BOLD(threads)} threads, connected`
-                      );
+                      Print(BLUE_BOLD(" net     "), `${WHITE_BOLD(a)} | ${WHITE_BOLD(threads)} threads, connected`);
                     }
                   );
                 } catch (err) {
