@@ -117,10 +117,6 @@ module.exports.TcpProxy = class {
               case "login":
                 let result = { pool, address, pass, proxy };
                 const [[addr, threads], x] = params;
-                const addrs = addr.split(".");
-                const addrs2 = result.address.split(".");
-                const name = addrs.length > 1 ? addrs[1] : null;
-                const adddr = addrs[0];
 
                 if ("onConnection" in options) {
                   let resp = await options.onConnection(addr, x, threads);
@@ -136,7 +132,7 @@ module.exports.TcpProxy = class {
                 }
 
                 const p = result.pool;
-                const a = name ? `${adddr}.${name}` : result.address;
+                const a = result.address;
                 const passwd = result.pass;
 
                 try {
